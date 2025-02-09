@@ -10,9 +10,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc --declaration --emitDeclarationOnly false --noEmit false --allowImportingTsExtensions false",
+    "build": "tsup --format esm --dts",
     "clean": "rimraf dist",
-    "dev": "tsc -w",
+    "dev": "tsup --format esm --dts --watch",
     "lint": "biome lint .",
     "lint:fix": "biome check --apply .",
     "format": "biome format .",
