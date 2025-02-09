@@ -9,6 +9,7 @@ export default defineConfig({
     external: [
         "@elizaos/core",
         "resend",
-        "zod"
+        "zod",
+        "@elizaos/core",
     ],
 });
