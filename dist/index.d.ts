@@ -1,3 +1,10 @@
-import type { Plugin } from "@elizaos/core";
-export declare const emailAutomationPlugin: Plugin;
-export default emailAutomationPlugin;
+declare const emailAutomationPlugin: {
+    name: string;
+    description: string;
+    services: any[];
+    clients: never[];
+    evaluators: never[];
+    providers: never[];
+};
+
+export { emailAutomationPlugin as default };
