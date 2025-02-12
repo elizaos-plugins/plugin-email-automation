@@ -75,8 +75,8 @@ Remember: Be concise and factual. Focus on actionable information over general s
 
 // src/services/emailTemplateManager.ts
 var EmailTemplateManager = class {
+  templates = /* @__PURE__ */ new Map();
   constructor() {
-    this.templates = /* @__PURE__ */ new Map();
     this.registerDefaultTemplates();
     this.registerHelpers();
     Handlebars.registerHelper("formatBlock", (block) => {
@@ -120,23 +120,24 @@ var EmailTemplateManager = class {
       return arg1 === arg2;
     });
     Handlebars.registerHelper("formatBlock", (block) => {
+      var _a, _b, _c, _d, _e, _f, _g, _h;
       switch (block.type) {
         case "paragraph":
           return new Handlebars.SafeString(
-            `<p class="email-paragraph ${block.metadata?.className || ""}"
-                            style="${block.metadata?.style || ""}">${block.content}</p>`
+            `<p class="email-paragraph ${((_a = block.metadata) == null ? void 0 : _a.className) || ""}"
+                            style="${((_b = block.metadata) == null ? void 0 : _b.style) || ""}">${block.content}</p>`
           );
         case "bulletList":
           return new Handlebars.SafeString(
-            `<ul class="email-list ${block.metadata?.className || ""}"
-                            style="${block.metadata?.style || ""}">
+            `<ul class="email-list ${((_c = block.metadata) == null ? void 0 : _c.className) || ""}"
+                            style="${((_d = block.metadata) == null ? void 0 : _d.style) || ""}">
                             ${Array.isArray(block.content) ? block.content.map((item) => `<li class="email-list-item">${item}</li>`).join("") : `<li class="email-list-item">${block.content}</li>`}
                         </ul>`
           );
         case "heading":
           return new Handlebars.SafeString(
-            `<h2 class="email-heading ${block.metadata?.className || ""}"
-                            style="${block.metadata?.style || ""}">${block.content}</h2>`
+            `<h2 class="email-heading ${((_e = block.metadata) == null ? void 0 : _e.className) || ""}"
+                            style="${((_f = block.metadata) == null ? void 0 : _f.style) || ""}">${block.content}</h2>`
           );
         case "signature":
           return new Handlebars.SafeString(
@@ -144,8 +145,8 @@ var EmailTemplateManager = class {
           );
         case "callout":
           return new Handlebars.SafeString(
-            `<div class="email-callout ${block.metadata?.className || ""}"
-                            style="${block.metadata?.style || ""}">${block.content}</div>`
+            `<div class="email-callout ${((_g = block.metadata) == null ? void 0 : _g.className) || ""}"
+                            style="${((_h = block.metadata) == null ? void 0 : _h.style) || ""}">${block.content}</div>`
           );
         default:
           return block.content;
@@ -602,13 +603,15 @@ var createEmailProviderError = (provider, error, context) => new EmailProviderEr
 
 // src/providers/resend.ts
 var ResendProvider = class {
+  client;
+  retryAttempts = 3;
+  retryDelay = 1e3;
   // ms
   constructor(apiKey) {
-    this.retryAttempts = 3;
-    this.retryDelay = 1e3;
     this.client = new Resend(apiKey);
   }
   async sendEmail(options) {
+    var _a;
     let lastError = null;
     for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
       try {
@@ -625,7 +628,7 @@ var ResendProvider = class {
           attachments: options.attachments,
           tags: options.tags
         });
-        if (!response.data?.id) {
+        if (!((_a = response.data) == null ? void 0 : _a.id)) {
           throw new Error("Missing response data from Resend");
         }
         elizaLogger.debug("Email sent successfully", {
@@ -698,7 +701,10 @@ var EmailService = class {
     this.templateManager = templateManager || new EmailTemplateManager();
     this.provider = new ResendProvider(this.secrets.RESEND_API_KEY);
   }
+  templateManager;
+  provider;
   async sendEmail(content, options) {
+    var _a;
     elizaLogger2.info("Starting email send process", {
       hasContent: !!content,
       contentType: content ? typeof content : "undefined",
@@ -711,7 +717,7 @@ var EmailService = class {
       elizaLogger2.debug("Template rendered", {
         hasHtml: !!html,
         template: options.template || "default",
-        htmlLength: html?.length || 0,
+        htmlLength: (html == null ? void 0 : html.length) || 0,
         htmlPreview: html ? html.substring(0, 200) : "No HTML generated"
       });
       elizaLogger2.debug("Sending via Resend...");
@@ -747,7 +753,7 @@ var EmailService = class {
         options: {
           to: options.to,
           subject: content.subject,
-          blocksCount: content.blocks?.length
+          blocksCount: (_a = content.blocks) == null ? void 0 : _a.length
         }
       });
       throw error;
@@ -832,12 +838,15 @@ var EmailAutomationService = class extends Service {
   get serviceType() {
     return ServiceType.EMAIL_AUTOMATION;
   }
+  emailService;
+  runtime;
   constructor() {
     super();
   }
   async initialize(runtime) {
+    var _a;
     this.runtime = runtime;
-    const isEnabled = runtime.getSetting("EMAIL_AUTOMATION_ENABLED")?.toLowerCase() === "true" || false;
+    const isEnabled = ((_a = runtime.getSetting("EMAIL_AUTOMATION_ENABLED")) == null ? void 0 : _a.toLowerCase()) === "true" || false;
     elizaLogger3.debug(`\u{1F4CB} Email Automation Enabled: ${isEnabled}`);
     if (!isEnabled) {
       elizaLogger3.debug("\u274C Email automation is disabled");
@@ -883,7 +892,7 @@ var EmailAutomationService = class extends Service {
     return {
       memory,
       state,
-      metadata: state?.metadata,
+      metadata: state == null ? void 0 : state.metadata,
       timestamp: /* @__PURE__ */ new Date(),
       conversationId: memory.id || ""
     };
@@ -944,6 +953,7 @@ var EmailAutomationService = class extends Service {
     return shouldEmail;
   }
   async handleEmailTrigger(context) {
+    var _a, _b;
     try {
       const userInfo = {
         id: context.memory.userId,
@@ -1003,7 +1013,7 @@ var EmailAutomationService = class extends Service {
           priority: "high"
         }
       };
-      if (sections.technicalDetails?.length) {
+      if ((_a = sections.technicalDetails) == null ? void 0 : _a.length) {
         emailContent.blocks.push(
           {
             type: "heading",
@@ -1015,7 +1025,7 @@ var EmailAutomationService = class extends Service {
           }
         );
       }
-      if (sections.nextSteps?.length) {
+      if ((_b = sections.nextSteps) == null ? void 0 : _b.length) {
         emailContent.blocks.push(
           {
             type: "heading",
@@ -1054,32 +1064,33 @@ var EmailAutomationService = class extends Service {
     }
   }
   parseFormattedEmail(formattedEmail) {
+    var _a, _b, _c, _d, _e;
     const sections = {};
     try {
       const subjectMatch = formattedEmail.match(/Subject: (.+?)(?:\n|$)/);
-      sections.subject = subjectMatch?.[1]?.trim() || "New Connection Request";
+      sections.subject = ((_a = subjectMatch == null ? void 0 : subjectMatch[1]) == null ? void 0 : _a.trim()) || "New Connection Request";
       elizaLogger3.debug("\u{1F4DD} Parsed subject:", sections.subject);
       const backgroundMatch = formattedEmail.match(/Background:\n([\s\S]*?)(?=\n\n|Key Points:|$)/);
-      sections.background = backgroundMatch?.[1]?.trim() || "";
+      sections.background = ((_b = backgroundMatch == null ? void 0 : backgroundMatch[1]) == null ? void 0 : _b.trim()) || "";
       elizaLogger3.debug("\u{1F4DD} Parsed background:", {
         found: !!backgroundMatch,
         length: sections.background.length
       });
       const keyPointsMatch = formattedEmail.match(/Key Points:\n([\s\S]*?)(?=\n\n|Technical Details:|Next Steps:|$)/);
-      sections.keyPoints = keyPointsMatch?.[1]?.split("\n").filter((point) => point.trim()).map((point) => point.trim().replace(/^[•\-]\s*/, "")) || [];
+      sections.keyPoints = ((_c = keyPointsMatch == null ? void 0 : keyPointsMatch[1]) == null ? void 0 : _c.split("\n").filter((point) => point.trim()).map((point) => point.trim().replace(/^[•\-]\s*/, ""))) || [];
       elizaLogger3.debug("\u{1F4DD} Parsed key points:", {
         count: sections.keyPoints.length,
         points: sections.keyPoints
       });
       const technicalMatch = formattedEmail.match(/Technical Details:\n([\s\S]*?)(?=\n\n|Next Steps:|$)/);
       if (technicalMatch) {
-        sections.technicalDetails = technicalMatch[1]?.split("\n").filter((point) => point.trim()).map((point) => point.trim().replace(/^[•\-]\s*/, ""));
+        sections.technicalDetails = (_d = technicalMatch[1]) == null ? void 0 : _d.split("\n").filter((point) => point.trim()).map((point) => point.trim().replace(/^[•\-]\s*/, ""));
         elizaLogger3.debug("\u{1F4DD} Parsed technical details:", {
           count: sections.technicalDetails.length
         });
       }
       const nextStepsMatch = formattedEmail.match(/Next Steps:\n([\s\S]*?)(?=\n\n|$)/);
-      sections.nextSteps = nextStepsMatch?.[1]?.split("\n").filter((step) => step.trim()).map((step) => step.trim().replace(/^(\d+\.|\-|\•)\s*/, "")) || [];
+      sections.nextSteps = ((_e = nextStepsMatch == null ? void 0 : nextStepsMatch[1]) == null ? void 0 : _e.split("\n").filter((step) => step.trim()).map((step) => step.trim().replace(/^(\d+\.|\-|\•)\s*/, ""))) || [];
       elizaLogger3.debug("\u{1F4DD} Parsed next steps:", {
         count: sections.nextSteps.length
       });
