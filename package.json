@@ -64,25 +64,33 @@
         "pluginParameters": {
             "RESEND_API_KEY": {
                 "type": "string",
-                "description": "Your Resend API key"
+                "minLength": 1,
+                "description": "Your Resend API key",
+                "optional": false
             },
             "DEFAULT_TO_EMAIL": {
                 "type": "string",
-                "description": "Default recipient email address"
+                "minLength": 1,
+                "description": "Default recipient",
+                "optional": false
             },
             "DEFAULT_FROM_EMAIL": {
                 "type": "string",
-                "description": "Default sender email address"
+                "minLength": 1,
+                "description": "Default sender",
+                "optional": false
             },
             "EMAIL_AUTOMATION_ENABLED": {
                 "type": "string",
-                "default": "true",
-                "description": "Enable AI detection. If this is enabled, the plugin will automatically detect email-worthy conversations and handle generation/delivery"
+                "minLength": 1,
+                "description": "Enable AI detection. If this is enabled, the plugin will automatically detect email-worthy conversations and handle generation/delivery and only that.",
+                "optional": true
             },
             "EMAIL_EVALUATION_PROMPT": {
                 "type": "string",
-                "optional": true,
-                "description": "Custom detection criteria for shouldEmail"
+                "minLength": 1,
+                "description": "Custom detection criteria for shouldEmail",
+                "optional": true
             }
         }
     }
